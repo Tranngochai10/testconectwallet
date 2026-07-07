@@ -20,6 +20,9 @@ export default function App() {
     walletAddress,
     networkName,
     ethBalance,
+    tokenSymbol,
+    providerName,
+    rawChainId,
     showSignaturePopup,
     connectWallet,
     confirmSignature,
@@ -49,6 +52,7 @@ export default function App() {
   // Handwritten drawing states
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [hasSignedHandwritten, setHasSignedHandwritten] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
@@ -88,11 +92,15 @@ export default function App() {
     setTxState('Pending');
     
     try {
-      if (pendingTx.token === 'ETH') {
+      if (pendingTx.token === 'ETH' && !isDemoMode) {
         const valueWei = parseFloat(pendingTx.amount) * 1e18;
         const valueHex = `0x${valueWei.toString(16)}`;
 
-        const txHash = await window.ethereum.request({
+        const provider = window.ethereum?.providers 
+          ? window.ethereum.providers.find((p: any) => p.isMetaMask) || window.ethereum 
+          : window.ethereum;
+
+        const txHash = await provider.request({
           method: 'eth_sendTransaction',
           params: [
             {
@@ -185,6 +193,9 @@ export default function App() {
               ethBalance={ethBalance}
               tokenBalances={tokenBalances}
               connectWallet={connectWallet}
+              tokenSymbol={tokenSymbol}
+              providerName={providerName}
+              rawChainId={rawChainId}
             />
 
             <TransferForm 
@@ -193,6 +204,8 @@ export default function App() {
               ethBalance={ethBalance}
               tokenBalances={tokenBalances}
               onTransferInit={handleTransferInit}
+              isDemoMode={isDemoMode}
+              setIsDemoMode={setIsDemoMode}
             />
 
           </div>

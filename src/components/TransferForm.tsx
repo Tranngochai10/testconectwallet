@@ -8,6 +8,8 @@ interface TransferFormProps {
   ethBalance: string;
   tokenBalances: TokenBalance[];
   onTransferInit: (recipient: string, amount: string, token: 'ETH' | 'USDC' | 'LINK' | 'UNI') => void;
+  isDemoMode: boolean;
+  setIsDemoMode: (val: boolean) => void;
 }
 
 export const TransferForm: React.FC<TransferFormProps> = ({
@@ -15,7 +17,9 @@ export const TransferForm: React.FC<TransferFormProps> = ({
   isSigned,
   ethBalance,
   tokenBalances,
-  onTransferInit
+  onTransferInit,
+  isDemoMode,
+  setIsDemoMode
 }) => {
   const [selectedToken, setSelectedToken] = useState<'ETH' | 'USDC' | 'LINK' | 'UNI'>('ETH');
   const [recipient, setRecipient] = useState('');
@@ -46,7 +50,27 @@ export const TransferForm: React.FC<TransferFormProps> = ({
 
   return (
     <div className="bg-white rounded-3xl p-6 lg:p-8 border border-slate-100 shadow-sm">
-      <h2 className="text-lg font-bold text-slate-900 mb-6">Transfer Assets</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-lg font-bold text-slate-900">Transfer Assets</h2>
+        
+        {/* Demo Mode Toggle */}
+        <div className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Demo Mode</span>
+          <button
+            type="button"
+            onClick={() => setIsDemoMode(!isDemoMode)}
+            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              isDemoMode ? 'bg-indigo-600' : 'bg-slate-200'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                isDemoMode ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Select Token */}
@@ -143,7 +167,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({
             className={`w-2/3 text-xs font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-indigo-100 flex items-center justify-center space-x-2 ${(!isConnected || !isSigned) ? 'bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Transfer Asset</span>
+            <span>{isDemoMode ? 'Simulate Transfer' : 'Transfer Asset'}</span>
           </button>
         </div>
       </form>

@@ -10,6 +10,9 @@ interface WalletProfileProps {
   ethBalance: string;
   tokenBalances: TokenBalance[];
   connectWallet: () => void;
+  tokenSymbol: string;
+  providerName: string;
+  rawChainId: string;
 }
 
 export const WalletProfile: React.FC<WalletProfileProps> = ({
@@ -19,7 +22,10 @@ export const WalletProfile: React.FC<WalletProfileProps> = ({
   networkName,
   ethBalance,
   tokenBalances,
-  connectWallet
+  connectWallet,
+  tokenSymbol,
+  providerName,
+  rawChainId
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -86,13 +92,17 @@ export const WalletProfile: React.FC<WalletProfileProps> = ({
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-slate-400 block mb-1">Network</span>
-                <span className="font-semibold text-slate-700">{networkName}</span>
+                <span className="font-semibold text-slate-700">{networkName} <span className="text-[10px] text-slate-400 font-mono">({rawChainId})</span></span>
               </div>
               <div>
+                <span className="text-slate-400 block mb-1">Active Wallet</span>
+                <span className="font-semibold text-indigo-600">{providerName}</span>
+              </div>
+              <div className="col-span-2">
                 <span className="text-slate-400 block mb-1">Signature Status</span>
                 <span className="font-semibold text-emerald-600 flex items-center space-x-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Verified</span>
+                  <span>Verified (AuraPay)</span>
                 </span>
               </div>
             </div>
@@ -100,10 +110,10 @@ export const WalletProfile: React.FC<WalletProfileProps> = ({
 
           {/* Balance Showcase */}
           <div className="space-y-1">
-            <span className="text-xs font-medium text-slate-400">Total ETH Balance</span>
+            <span className="text-xs font-medium text-slate-400">Total {tokenSymbol} Balance</span>
             <div className="flex items-baseline space-x-2">
               <span className="text-4xl font-extrabold text-slate-900 tracking-tight">{ethBalance}</span>
-              <span className="text-lg font-bold text-indigo-600">ETH</span>
+              <span className="text-lg font-bold text-indigo-600">{tokenSymbol}</span>
             </div>
             <p className="text-xs text-slate-400">≈ ${(parseFloat(ethBalance) * 3240).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD</p>
           </div>
