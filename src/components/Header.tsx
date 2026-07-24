@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { Wallet, Bell } from 'lucide-react';
+import { Wallet, Bell, ChevronDown, Globe } from 'lucide-react';
+
+interface NetworkOption {
+  id: string; // hex chainId
+  name: string;
+  color: string;
+}
+
+const SUPPORTED_NETWORKS: NetworkOption[] = [
+  { id: '0x1', name: 'Ethereum Mainnet', color: 'bg-indigo-500' },
+  { id: '0xaa36a7', name: 'Sepolia Testnet', color: 'bg-purple-500' },
+  { id: '0x89', name: 'Polygon Mainnet', color: 'bg-violet-500' },
+  { id: '0x13882', name: 'Polygon Amoy Testnet', color: 'bg-teal-500' },
+  { id: '0x38', name: 'BNB Smart Chain', color: 'bg-amber-500' },
+  { id: '0xa4b1', name: 'Arbitrum One', color: 'bg-blue-500' },
+  { id: '0xa', name: 'OP Mainnet', color: 'bg-red-500' },
+];
 
 interface HeaderProps {
   isConnected: boolean;
@@ -9,6 +25,7 @@ interface HeaderProps {
   connectWallet: () => void;
   notifications: string[];
   clearNotifications: () => void;
+  switchNetwork: (chainIdHex: string) => Promise<void>;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,9 +35,16 @@ export const Header: React.FC<HeaderProps> = ({
   networkName,
   connectWallet,
   notifications,
-  clearNotifications
+  clearNotifications,
+  switchNetwork
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showNetworks, setShowNetworks] = useState(false);
+
+  const handleNetworkSelect = async (chainIdHex: string) => {
+    setShowNetworks(false);
+    await switchNetwork(chainIdHex);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-xs">
@@ -35,10 +59,36 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center space-x-4">
-        {/* Network Badge */}
-        <div className="flex items-center space-x-2 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-          <span>{networkName}</span>
+        {/* Network Selector Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNetworks(!showNetworks)}
+            className="flex items-center space-x-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-150"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{networkName}</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showNetworks ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showNetworks && (
+            <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-4 py-1.5 border-b border-slate-100 mb-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chọn Mạng</span>
+              </div>
+              <div className="space-y-0.5">
+                {SUPPORTED_NETWORKS.map((network) => (
+                  <button
+                    key={network.id}
+                    onClick={() => handleNetworkSelect(network.id)}
+                    className="w-full flex items-center space-x-2.5 px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left"
+                  >
+                    <span className={`w-2 h-2 rounded-full ${network.color}`} />
+                    <span>{network.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Connected Wallet Indicator */}

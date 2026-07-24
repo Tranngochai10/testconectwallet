@@ -27,7 +27,8 @@ export default function App() {
     connectWallet,
     confirmSignature,
     handleDisconnect,
-    fetchBalance
+    fetchBalance,
+    switchNetwork
   } = useMetaMask();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'wallet' | 'transactions' | 'explorer' | 'settings'>('dashboard');
@@ -170,6 +171,7 @@ export default function App() {
         connectWallet={connectWallet}
         notifications={notifications}
         clearNotifications={() => setNotifications([])}
+        switchNetwork={switchNetwork}
       />
 
       <div className="flex-1 flex overflow-hidden">

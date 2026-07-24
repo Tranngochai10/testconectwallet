@@ -25,7 +25,9 @@ export function useMetaMask() {
   const [providerName, setProviderName] = useState('None');
   const [rawChainId, setRawChainId] = useState('0x0');
 
-  const tokenSymbol = networkName === 'Sepolia Testnet' ? 'SepoliaETH' : 'ETH';
+  const tokenSymbol = (networkName === 'Polygon Mainnet' || networkName === 'Polygon Amoy Testnet') 
+    ? 'POL' 
+    : (networkName === 'Sepolia Testnet' ? 'SepoliaETH' : 'ETH');
 
   useEffect(() => {
     const provider = getMetaMaskProvider();
@@ -150,6 +152,10 @@ export function useMetaMask() {
         setNetworkName('Sepolia Testnet');
       } else if (chainIdNum === 1) {
         setNetworkName('Ethereum Mainnet');
+      } else if (chainIdNum === 137) {
+        setNetworkName('Polygon Mainnet');
+      } else if (chainIdNum === 80002) {
+        setNetworkName('Polygon Amoy Testnet');
       } else {
         setNetworkName(`Chain ID: ${chainIdNum}`);
       }
@@ -239,6 +245,90 @@ export function useMetaMask() {
     setWalletAddress('');
   };
 
+  const switchNetwork = async (chainIdHex: string) => {
+    const provider = getMetaMaskProvider();
+    if (!provider) {
+      alert('MetaMask extension not found!');
+      return;
+    }
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: chainIdHex }],
+      });
+      await detectNetwork();
+    } catch (err: any) {
+      // 4902 error code indicates the chain has not been added to MetaMask
+      if (err.code === 4902) {
+        try {
+          const networkParams: Record<string, any> = {
+            '0x89': {
+              chainId: '0x89',
+              chainName: 'Polygon Mainnet',
+              nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+              rpcUrls: ['https://polygon-rpc.com'],
+              blockExplorerUrls: ['https://polygonscan.com'],
+            },
+            '0x13882': {
+              chainId: '0x13882',
+              chainName: 'Polygon Amoy Testnet',
+              nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+              rpcUrls: [
+                'https://rpc-amoy.polygon.technology',
+                'https://polygon-amoy.drpc.org',
+                'https://polygon-amoy-bor.publicnode.com'
+              ],
+              blockExplorerUrls: ['https://amoy.polygonscan.com'],
+            },
+            '0x38': {
+              chainId: '0x38',
+              chainName: 'BNB Smart Chain',
+              nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+              rpcUrls: ['https://bsc-dataseed.binance.org/'],
+              blockExplorerUrls: ['https://bscscan.com'],
+            },
+            '0xa4b1': {
+              chainId: '0xa4b1',
+              chainName: 'Arbitrum One',
+              nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+              rpcUrls: ['https://arb1.arbitrum.io/rpc'],
+              blockExplorerUrls: ['https://arbiscan.io'],
+            },
+            '0xa': {
+              chainId: '0xa',
+              chainName: 'OP Mainnet',
+              nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+              rpcUrls: ['https://mainnet.optimism.io'],
+              blockExplorerUrls: ['https://optimistic.etherscan.io'],
+            },
+            '0xaa36a7': {
+              chainId: '0xaa36a7',
+              chainName: 'Sepolia Testnet',
+              nativeCurrency: { name: 'Sepolia Ether', symbol: 'SepoliaETH', decimals: 18 },
+              rpcUrls: ['https://rpc.sepolia.org'],
+              blockExplorerUrls: ['https://sepolia.etherscan.io'],
+            }
+          };
+
+          const params = networkParams[chainIdHex];
+          if (params) {
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [params],
+            });
+            await detectNetwork();
+          } else {
+            alert('Mạng chưa được cấu hình tự động. Vui lòng thêm thủ công trên ví.');
+          }
+        } catch (addErr) {
+          console.error('Error adding network:', addErr);
+        }
+      } else {
+        console.error('Error switching network:', err);
+      }
+    }
+  };
+
   return {
     isConnected,
     isSigned,
@@ -253,6 +343,7 @@ export function useMetaMask() {
     connectWallet,
     confirmSignature,
     handleDisconnect,
-    fetchBalance
+    fetchBalance,
+    switchNetwork
   };
 }
